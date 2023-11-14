@@ -17,7 +17,7 @@ on:
         options:
           - 'master'
       CONFIG_FILE:
-        description: '请选择配置文件'
+        description: '选择机型配置'
         required: true
         default: 'x86_64'
         type: choice
