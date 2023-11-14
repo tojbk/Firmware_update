@@ -16,6 +16,7 @@ on:
         type: choice
         options:
           - 'master'
+          - 'gl-ax1800'
       CONFIG_FILE:
         description: '选择机型配置'
         required: true
