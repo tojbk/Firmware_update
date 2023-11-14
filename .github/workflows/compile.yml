@@ -40,10 +40,9 @@ jobs:
     - name: 准备结束
       uses: actions/checkout@v3
 
-    - name: 检测文件和对比上游版本
+    - name: 检测文件
       run: |
         cd ${GITHUB_WORKSPACE}
-        bash <(curl -fsSL https://raw.githubusercontent.com/281677160/common/main/custom/first.sh)
         if [[ -n "${{ github.event.workflow }}" ]] || [[ -n "${{ github.event.schedule }}" ]]; then
           source ${GITHUB_WORKSPACE}/build/${FOLDER_NAME}/settings.ini
         else
@@ -61,7 +60,7 @@ jobs:
         cd ${GITHUB_WORKSPACE}
         source build/${FOLDER_NAME}/common.sh && CPU_Priority
 
-    - name: 释放Ubuntu磁盘空间
+    - name: 释放磁盘空间
       uses: jlumbroso/free-disk-space@main
       with:
         # this might remove tools that are actually needed,
@@ -75,7 +74,7 @@ jobs:
         large-packages: true
         swap-storage: true
         
-    - name: 部署编译环境
+    - name: 部署环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -97,22 +96,22 @@ jobs:
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu2
  
-    - name: 更新插件源
+    - name: 更新插件
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu3
  
-    - name: 加载自定义设置
+    - name: 加载设置
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu4
         
-    - name: 安装插件源
+    - name: 安装插件
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu5
 
-    - name: 生成"${{matrix.target}}"配置文件
+    - name: 生成"${{matrix.target}}"配置
       run: |
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_menu6
@@ -139,7 +138,7 @@ jobs:
         make defconfig
         make download -j16
     
-    - name: 开始编译固件
+    - name: 编译固件
       id: compile
       run: |
         cd openwrt
@@ -167,7 +166,7 @@ jobs:
         cd openwrt
         source ${BUILD_PATH}/common.sh && Diy_firmware
         
-    - name: 上传固件在 github Artifacts
+    - name: 上传固件
       if: steps.compile.outcome == 'success' && env.UPLOAD_FIRMWARE == 'true'
       uses: actions/upload-artifact@v3
       with:
@@ -185,7 +184,7 @@ jobs:
         body: ${{ env.Tongzhi_Date }}
         artifacts: "${{ env.FIRMWARE_PATH }}/*"
         
-    - name: 发送[在线更新固件]至云端1
+    - name: 发送至云端1
       id: autoup
       if: steps.compile.outcome == 'success' && env.UPDATE_FIRMWARE_ONLINE == 'true' && env.REPO_TOKEN
       uses: ncipollo/release-action@main
@@ -197,7 +196,7 @@ jobs:
         body: ${{ env.Tongzhi_Date }}
         artifacts: "${{ env.BIN_PATH }}/*"
         
-    - name: 发送[在线更新固件]至云端2
+    - name: 发送至云端2
       if: steps.autoup.outcome == 'success' && env.UPDATE_FIRMWARE_ONLINE == 'true' && env.REPO_TOKEN
       run: |
         mkdir -p Github_Api
@@ -207,7 +206,7 @@ jobs:
           curl -H "Authorization: Bearer ${REPO_TOKEN}" https://api.github.com/repos/${GIT_REPOSITORY}/releases/tags/${Update_tag} > zzz_api
         fi
         
-    - name: 发送[在线更新固件]至云端3
+    - name: 发送至云端3
       if: steps.autoup.outcome == 'success' && env.UPDATE_FIRMWARE_ONLINE == 'true' && env.REPO_TOKEN
       uses: ncipollo/release-action@main
       with:
@@ -218,7 +217,7 @@ jobs:
         allowUpdates: true
         body: ${{ env.Tongzhi_Date }}
 
-    - name: Telegram或pushplus信息通知
+    - name: 信息通知
       if: env.PUSH_PLUS_TOKEN && env.INFORMATION_NOTICE == 'PUSH' || env.TELEGRAM_BOT_TOKEN && env.INFORMATION_NOTICE == 'TG'
       run: |
         if [[ "${{ env.INFORMATION_NOTICE }}" == "TG" ]]; then
